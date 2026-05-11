@@ -4,7 +4,6 @@ import { Database, Upload, Search, Star, ArrowRight, Globe, Users, BarChart2 } f
 export default function Landing() {
   return (
     <div className="landing">
-      {/* Hero */}
       <section className="hero">
         <div className="hero-bg" />
         <div className="hero-content">
@@ -25,7 +24,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Stats */}
       <section className="stats-band">
         <div className="stat"><span className="stat-num">500+</span><span>Datasets</span></div>
         <div className="stat"><span className="stat-num">1 200+</span><span>Chercheurs</span></div>
@@ -33,7 +31,6 @@ export default function Landing() {
         <div className="stat"><span className="stat-num">15+</span><span>Pays</span></div>
       </section>
 
-      {/* Features */}
       <section className="features">
         <h2 className="section-title">Tout ce dont vous avez besoin</h2>
         <div className="features-grid">
@@ -54,7 +51,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Domains */}
       <section className="domains">
         <h2 className="section-title">Explorez par domaine</h2>
         <div className="domains-grid">
@@ -75,7 +71,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* CTA */}
       <section className="cta-section">
         <h2>Prêt à contribuer ?</h2>
         <p>Rejoignez des centaines de chercheurs qui partagent leurs données.</p>

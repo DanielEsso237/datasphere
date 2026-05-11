@@ -130,7 +130,7 @@ export default function DatasetDetail() {
 
       {/* Tabs */}
       <div className="tabs">
-        {[['info','📋 Informations'], ['preview','📊 Aperçu'], ['comments','💬 Commentaires']].map(([t, label]) => (
+        {[['info','Informations'], ['preview','Aperçu'], ['comments','Commentaires']].map(([t, label]) => (
           <button key={t} className={`tab ${tab === t ? 'active' : ''}`} onClick={() => setTab(t)}>
             {label} {t === 'comments' && `(${comments.length})`}
           </button>
@@ -195,7 +195,7 @@ export default function DatasetDetail() {
               </form>
             )}
             {comments.length === 0 ? (
-              <div className="empty-state"><span>💬</span><p>Soyez le premier à commenter !</p></div>
+              <div className="empty-state"><p>Soyez le premier à commenter !</p></div>
             ) : (
               <div className="comments-list">
                 {comments.map(c => (

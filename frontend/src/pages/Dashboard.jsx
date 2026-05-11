@@ -22,7 +22,7 @@ export default function Dashboard() {
     ? (datasets.reduce((s, d) => s + d.avg_rating, 0) / datasets.length).toFixed(1)
     : 0
 
-  const roleLabel = user?.role === 'researcher' ? '🔬 Chercheur' : '🎓 Étudiant'
+  const roleLabel = user?.role === 'researcher' ? 'Chercheur' : 'Étudiant'
 
   return (
     <div className="page-container">

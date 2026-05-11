@@ -47,7 +47,7 @@ export default function Register() {
             <div className="field">
               <label>Nom d'utilisateur</label>
               <div className="input-wrap"><User size={16}/>
-                <input placeholder="johndoe" value={form.username} onChange={set('username')} required/>
+                <input placeholder="Toubet" value={form.username} onChange={set('username')} required/>
               </div>
             </div>
             <div className="field">
@@ -61,7 +61,7 @@ export default function Register() {
           <div className="field">
             <label>Rôle</label>
             <div className="role-select">
-              {[['student','🎓 Étudiant'],['researcher','🔬 Chercheur']].map(([val, label]) => (
+              {[['student','Étudiant'],['researcher','Chercheur']].map(([val, label]) => (
                 <label key={val} className={`role-opt ${form.role === val ? 'active' : ''}`}>
                   <input type="radio" name="role" value={val} checked={form.role === val} onChange={set('role')}/>
                   {label}
@@ -73,7 +73,7 @@ export default function Register() {
           <div className="field">
             <label>Institution (optionnel)</label>
             <div className="input-wrap"><Building size={16}/>
-              <input placeholder="Université de Yaoundé I" value={form.institution} onChange={set('institution')}/>
+              <input placeholder="Université d'Ebolowa" value={form.institution} onChange={set('institution')}/>
             </div>
           </div>
 

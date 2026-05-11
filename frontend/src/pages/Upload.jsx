@@ -5,11 +5,11 @@ import { Upload as UploadIcon, FileText, X, CheckCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const DOMAINS = [
-  { value:'health', label:'🏥 Santé' }, { value:'agriculture', label:'🌾 Agriculture' },
-  { value:'education', label:'📚 Éducation' }, { value:'environment', label:'🌿 Environnement' },
-  { value:'economy', label:'📈 Économie' }, { value:'technology', label:'💻 Technologie' },
-  { value:'biology', label:'🔬 Biologie' }, { value:'physics', label:'⚛️ Physique' },
-  { value:'social', label:'👥 Sc. Sociales' }, { value:'other', label:'📦 Autre' },
+  { value:'health', label:'Santé' }, { value:'agriculture', label:'Agriculture' },
+  { value:'education', label:'Éducation' }, { value:'environment', label:'Environnement' },
+  { value:'economy', label:'Économie' }, { value:'technology', label:'Technologie' },
+  { value:'biology', label:'Biologie' }, { value:'physics', label:'Physique' },
+  { value:'social', label:'Sc. Sociales' }, { value:'other', label:'Autre' },
 ]
 
 export default function Upload() {

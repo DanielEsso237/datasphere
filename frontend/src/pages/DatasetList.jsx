@@ -7,16 +7,16 @@ import { Search, Filter, X } from 'lucide-react'
 
 const DOMAINS = [
   { value:'', label:'Tous les domaines' },
-  { value:'health', label:'🏥 Santé' },
-  { value:'agriculture', label:'🌾 Agriculture' },
-  { value:'education', label:'📚 Éducation' },
-  { value:'environment', label:'🌿 Environnement' },
-  { value:'economy', label:'📈 Économie' },
-  { value:'technology', label:'💻 Technologie' },
-  { value:'biology', label:'🔬 Biologie' },
-  { value:'physics', label:'⚛️ Physique' },
-  { value:'social', label:'👥 Sc. Sociales' },
-  { value:'other', label:'📦 Autre' },
+  { value:'health', label:'Santé' },
+  { value:'agriculture', label:'Agriculture' },
+  { value:'education', label:'Éducation' },
+  { value:'environment', label:'Environnement' },
+  { value:'economy', label:'Économie' },
+  { value:'technology', label:'Technologie' },
+  { value:'biology', label:'Biologie' },
+  { value:'physics', label:'Physique' },
+  { value:'social', label:'Sc. Sociales' },
+  { value:'other', label:'Autre' },
 ]
 
 export default function DatasetList() {
@@ -109,7 +109,6 @@ export default function DatasetList() {
         <>
           {datasets.length === 0 ? (
             <div className="empty-state">
-              <span>🔍</span>
               <h3>Aucun dataset trouvé</h3>
               <p>Essayez d'autres filtres ou termes de recherche.</p>
             </div>
