@@ -8,6 +8,7 @@ class DatasetListSerializer(serializers.ModelSerializer):
     ratings_count = serializers.ReadOnlyField()
     comments_count = serializers.ReadOnlyField()
     file_size_display = serializers.SerializerMethodField()
+    cover_image_url = serializers.SerializerMethodField()  # ← NOUVEAU
 
     class Meta:
         model = Dataset
@@ -15,11 +16,17 @@ class DatasetListSerializer(serializers.ModelSerializer):
             'id', 'title', 'description', 'domain', 'file_type',
             'file_size', 'file_size_display', 'tags', 'uploaded_by',
             'download_count', 'avg_rating', 'ratings_count',
-            'comments_count', 'created_at'
+            'comments_count', 'created_at', 'cover_image_url',  # ← NOUVEAU
         ]
 
     def get_file_size_display(self, obj):
         return obj.get_file_size_display()
+
+    def get_cover_image_url(self, obj):  # ← NOUVEAU
+        request = self.context.get('request')
+        if obj.cover_image and request:
+            return request.build_absolute_uri(obj.cover_image.url)
+        return None
 
 
 class DatasetDetailSerializer(DatasetListSerializer):
@@ -38,7 +45,7 @@ class DatasetDetailSerializer(DatasetListSerializer):
 class DatasetCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dataset
-        fields = ['id', 'title', 'description', 'domain', 'tags', 'file']
+        fields = ['id', 'title', 'description', 'domain', 'tags', 'file', 'cover_image']  # ← cover_image ajouté
 
     def validate_file(self, value):
         allowed_types = ['text/csv', 'application/json',
@@ -48,7 +55,7 @@ class DatasetCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Format non supporté. Utilisez CSV, JSON, Excel ou TXT.'
             )
-        if value.size > 50 * 1024 * 1024:  # 50MB
+        if value.size > 50 * 1024 * 1024:
             raise serializers.ValidationError('Fichier trop volumineux (max 50MB).')
         return value
 

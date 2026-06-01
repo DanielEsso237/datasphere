@@ -28,8 +28,9 @@ class Dataset(models.Model):
     domain = models.CharField(max_length=50, choices=DOMAIN_CHOICES, default='other')
     file = models.FileField(upload_to='datasets/')
     file_type = models.CharField(max_length=10, choices=FILE_TYPE_CHOICES, default='csv')
-    file_size = models.BigIntegerField(default=0)  # in bytes
+    file_size = models.BigIntegerField(default=0)
     tags = models.CharField(max_length=500, blank=True, help_text='Comma-separated tags')
+    cover_image = models.ImageField(upload_to='covers/', null=True, blank=True)  # ← NOUVEAU
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     download_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
