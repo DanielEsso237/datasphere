@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react'
 import { useSearchParams, Link, useNavigate } from 'react-router-dom'
 import { getDatasets } from '../services/api'
 import Spinner from '../components/Spinner'
+import UploadDrawer from '../components/UploadDrawer'
+import { useAuth } from '../context/AuthContext'
 import {
-  Search, SlidersHorizontal, TrendingUp, Clock, Download,
-  ChevronUp, Plus, Database, LayoutGrid, List, Star
+  Search, SlidersHorizontal, TrendingUp, Clock,
+  Download, ChevronUp, Plus, Database, LayoutGrid, List, Star
 } from 'lucide-react'
+import toast from 'react-hot-toast'
 
-// Images de couverture génériques par domaine (unsplash)
 const DOMAIN_COVERS = {
   health:      'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&q=70',
   agriculture: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400&q=70',
@@ -39,17 +41,22 @@ const FILE_COLORS = {
   csv: '#22c55e', json: '#f59e0b', xlsx: '#3b82f6', txt: '#8b5cf6', other: '#6b7280',
 }
 
+function getCover(dataset) {
+  // Si le dataset a une image de couverture uploadée, on la préfère
+  if (dataset.cover_image_url) return dataset.cover_image_url
+  return DOMAIN_COVERS[dataset.domain] || DOMAIN_COVERS.other
+}
+
 function DatasetCard({ dataset, view }) {
   const navigate = useNavigate()
-  const cover = DOMAIN_COVERS[dataset.domain] || DOMAIN_COVERS.other
+  const cover    = getCover(dataset)
   const fileColor = FILE_COLORS[dataset.file_type] || '#6b7280'
-  const date = new Date(dataset.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
 
   if (view === 'list') {
     return (
       <div className="ds-list-card" onClick={() => navigate(`/datasets/${dataset.id}`)}>
         <div className="ds-list-cover">
-          <img src={cover} alt={dataset.domain} onError={e => { e.target.style.display='none' }} />
+          <img src={cover} alt="" onError={e => { e.target.style.display = 'none' }} />
         </div>
         <div className="ds-list-body">
           <div className="ds-list-top">
@@ -64,15 +71,12 @@ function DatasetCard({ dataset, view }) {
             <span>{dataset.file_size_display}</span>
             <span>·</span>
             <span>{dataset.download_count} téléchargements</span>
-            <span>·</span>
-            <span>{date}</span>
           </p>
           <p className="ds-list-desc">{dataset.description?.slice(0, 120)}…</p>
         </div>
         <div className="ds-list-actions">
           <button className="ds-upvote-btn" onClick={e => e.stopPropagation()}>
-            <ChevronUp size={14} />
-            <span>{dataset.ratings_count || 0}</span>
+            <ChevronUp size={14} /><span>{dataset.ratings_count || 0}</span>
           </button>
           <div className="ds-avatar-sm">{dataset.uploaded_by?.username?.[0]?.toUpperCase()}</div>
         </div>
@@ -83,7 +87,7 @@ function DatasetCard({ dataset, view }) {
   return (
     <div className="ds-grid-card" onClick={() => navigate(`/datasets/${dataset.id}`)}>
       <div className="ds-card-cover">
-        <img src={cover} alt={dataset.domain} onError={e => { e.target.style.background='#1a1e28' }} />
+        <img src={cover} alt="" onError={e => { e.target.style.background = '#1a1e28' }} />
         <div className="ds-card-cover-overlay" />
         <button className="ds-more-btn cover-more" onClick={e => e.stopPropagation()}>···</button>
       </div>
@@ -99,8 +103,7 @@ function DatasetCard({ dataset, view }) {
         </div>
         <div className="ds-card-footer">
           <button className="ds-upvote-btn" onClick={e => e.stopPropagation()}>
-            <ChevronUp size={14} />
-            <span>{dataset.ratings_count || 0}</span>
+            <ChevronUp size={14} /><span>{dataset.ratings_count || 0}</span>
           </button>
           <div className="ds-avatar-sm">{dataset.uploaded_by?.username?.[0]?.toUpperCase()}</div>
         </div>
@@ -111,18 +114,24 @@ function DatasetCard({ dataset, view }) {
 
 export default function DatasetList() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const navigate = useNavigate()
-  const [datasets, setDatasets]     = useState([])
-  const [trending, setTrending]     = useState([])
-  const [loading, setLoading]       = useState(true)
-  const [total, setTotal]           = useState(0)
-  const [page, setPage]             = useState(1)
-  const [view, setView]             = useState('grid') // 'grid' | 'list'
+  const { user } = useAuth()
+  const [datasets, setDatasets]       = useState([])
+  const [trending, setTrending]       = useState([])
+  const [loading, setLoading]         = useState(true)
+  const [total, setTotal]             = useState(0)
+  const [page, setPage]               = useState(1)
+  const [view, setView]               = useState('grid')
   const [searchInput, setSearchInput] = useState(searchParams.get('search') || '')
+  const [showDrawer, setShowDrawer]   = useState(false)
 
   const search = searchParams.get('search') || ''
   const domain = searchParams.get('domain') || ''
-  const sort   = searchParams.get('sort') || 'newest'
+  const sort   = searchParams.get('sort')   || 'newest'
+
+  // Ouvrir le drawer si URL contient ?new=true
+  useEffect(() => {
+    if (searchParams.get('new') === 'true') setShowDrawer(true)
+  }, [])
 
   useEffect(() => {
     setLoading(true)
@@ -149,27 +158,43 @@ export default function DatasetList() {
     updateParam('search', searchInput)
   }
 
+  const handleNewDataset = () => {
+    if (!user) { toast.error('Connectez-vous pour publier un dataset.'); return }
+    setShowDrawer(true)
+  }
+
   const totalPages = Math.ceil(total / 12)
 
   return (
     <div className="dl-root">
-      {/* ───── SIDEBAR ───── */}
-      <aside className="dl-sidebar">
-        <Link to="/upload" className="dl-create-btn">
-          <Plus size={18} /> Nouveau dataset
-        </Link>
+      {/* ── Drawer ── */}
+      {showDrawer && (
+        <UploadDrawer
+          onClose={() => setShowDrawer(false)}
+          onSuccess={() => {
+            setShowDrawer(false)
+            // refresh
+            setPage(1)
+          }}
+        />
+      )}
 
+      {/* ── Sidebar ── */}
+      <aside className="dl-sidebar">
+        <button className="dl-create-btn" onClick={handleNewDataset}>
+          <Plus size={18} /> Nouveau dataset
+        </button>
         <nav className="dl-nav">
-          <Link to="/"        className="dl-nav-item"><Database size={18} /> Accueil</Link>
+          <Link to="/"         className="dl-nav-item"><Database size={18} /> Accueil</Link>
           <Link to="/datasets" className="dl-nav-item active"><TrendingUp size={18} /> Explorer</Link>
           <Link to="/dashboard" className="dl-nav-item"><Star size={18} /> Mon espace</Link>
         </nav>
       </aside>
 
-      {/* ───── MAIN ───── */}
+      {/* ── Main ── */}
       <div className="dl-main">
 
-        {/* Hero header (visible seulement sans filtres actifs) */}
+        {/* Hero (sans filtre actif) */}
         {!search && !domain && (
           <div className="dl-hero">
             <div className="dl-hero-text">
@@ -178,9 +203,9 @@ export default function DatasetList() {
                 Explorez, analysez et partagez des données scientifiques africaines.{' '}
                 <Link to="/register" className="dl-hero-link">En savoir plus</Link> sur DataSphere.
               </p>
-              <Link to="/upload" className="dl-hero-cta">
+              <button className="dl-hero-cta" onClick={handleNewDataset}>
                 <Plus size={16} /> Nouveau dataset
-              </Link>
+              </button>
             </div>
             <div className="dl-hero-illustration">
               <svg viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -204,7 +229,7 @@ export default function DatasetList() {
           </div>
         )}
 
-        {/* ── Search bar ── */}
+        {/* Search */}
         <form onSubmit={handleSearch} className="dl-searchbar">
           <Search size={18} className="dl-search-icon" />
           <input
@@ -213,12 +238,12 @@ export default function DatasetList() {
             value={searchInput}
             onChange={e => setSearchInput(e.target.value)}
           />
-          <button type="button" className="dl-filter-btn" onClick={() => {}}>
+          <button type="button" className="dl-filter-btn">
             <SlidersHorizontal size={16} /> Filtres
           </button>
         </form>
 
-        {/* ── Domain pills ── */}
+        {/* Domain pills */}
         <div className="dl-pills">
           {DOMAIN_PILLS.map(d => (
             <button
@@ -231,7 +256,7 @@ export default function DatasetList() {
           ))}
         </div>
 
-        {/* ── Trending (only on home view) ── */}
+        {/* Trending */}
         {!search && !domain && trending.length > 0 && (
           <section className="dl-section">
             <div className="dl-section-header">
@@ -243,19 +268,19 @@ export default function DatasetList() {
               </button>
             </div>
             <div className="dl-trending-grid">
-              {trending.map(d => (
-                <DatasetCard key={d.id} dataset={d} view="grid" />
-              ))}
+              {trending.map(d => <DatasetCard key={d.id} dataset={d} view="grid" />)}
             </div>
           </section>
         )}
 
-        {/* ── All datasets ── */}
+        {/* All datasets */}
         <section className="dl-section">
           <div className="dl-section-header">
             <span className="dl-section-title">
               <Clock size={18} />
-              {search || domain ? `${total} résultat${total !== 1 ? 's' : ''}` : 'Tous les datasets'}
+              {search || domain
+                ? `${total} résultat${total !== 1 ? 's' : ''}`
+                : 'Tous les datasets'}
             </span>
             <div className="dl-view-sort">
               <select
@@ -267,16 +292,10 @@ export default function DatasetList() {
                 <option value="popular">Plus populaires</option>
                 <option value="oldest">Plus anciens</option>
               </select>
-              <button
-                className={`dl-view-btn ${view === 'grid' ? 'active' : ''}`}
-                onClick={() => setView('grid')}
-              >
+              <button className={`dl-view-btn ${view === 'grid' ? 'active' : ''}`} onClick={() => setView('grid')}>
                 <LayoutGrid size={16} />
               </button>
-              <button
-                className={`dl-view-btn ${view === 'list' ? 'active' : ''}`}
-                onClick={() => setView('list')}
-              >
+              <button className={`dl-view-btn ${view === 'list' ? 'active' : ''}`} onClick={() => setView('list')}>
                 <List size={16} />
               </button>
             </div>
@@ -290,9 +309,7 @@ export default function DatasetList() {
             </div>
           ) : (
             <div className={view === 'grid' ? 'dl-grid' : 'dl-list'}>
-              {datasets.map(d => (
-                <DatasetCard key={d.id} dataset={d} view={view} />
-              ))}
+              {datasets.map(d => <DatasetCard key={d.id} dataset={d} view={view} />)}
             </div>
           )}
 
