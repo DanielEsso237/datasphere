@@ -90,33 +90,91 @@ class DatasetPreviewView(APIView):
             raise Http404
 
         try:
-            if dataset.file_type == 'csv':
+            file_type = dataset.file_type
+            # Also detect from filename if file_type is 'other'
+            if file_type == 'other':
+                name = dataset.file.name.lower()
+                if name.endswith('.csv'):
+                    file_type = 'csv'
+                elif name.endswith('.json'):
+                    file_type = 'json'
+                elif name.endswith('.txt'):
+                    file_type = 'txt'
+
+            if file_type == 'csv':
                 content = dataset.file.read().decode('utf-8', errors='replace')
                 reader = csv.DictReader(io.StringIO(content))
                 rows = []
                 columns = reader.fieldnames or []
                 for i, row in enumerate(reader):
-                    if i >= 10:
+                    if i >= 20:
                         break
                     rows.append(dict(row))
 
-                # Basic stats
-                stats = {'total_columns': len(columns), 'preview_rows': len(rows)}
-                return Response({'columns': columns, 'rows': rows, 'stats': stats})
+                # Count total rows
+                total_rows = sum(1 for _ in csv.reader(io.StringIO(content))) - 1  # subtract header
 
-            elif dataset.file_type == 'json':
+                stats = {
+                    'total_columns': len(columns),
+                    'preview_rows': len(rows),
+                    'total_rows': max(total_rows, len(rows)),
+                }
+                return Response({
+                    'type': 'table',
+                    'columns': columns,
+                    'rows': rows,
+                    'stats': stats,
+                })
+
+            elif file_type == 'json':
                 content = dataset.file.read().decode('utf-8', errors='replace')
                 data = json.loads(content)
                 if isinstance(data, list):
-                    preview = data[:10]
+                    preview = data[:20]
                     columns = list(preview[0].keys()) if preview else []
-                    return Response({'columns': columns, 'rows': preview, 'stats': {'total_records': len(data)}})
-                return Response({'data': data})
+                    return Response({
+                        'type': 'table',
+                        'columns': columns,
+                        'rows': preview,
+                        'stats': {
+                            'total_columns': len(columns),
+                            'preview_rows': len(preview),
+                            'total_rows': len(data),
+                        }
+                    })
+                elif isinstance(data, dict):
+                    # Flatten one level for preview
+                    columns = list(data.keys())[:20]
+                    rows = [{k: str(data[k])[:100] for k in columns}]
+                    return Response({
+                        'type': 'table',
+                        'columns': columns,
+                        'rows': rows,
+                        'stats': {
+                            'total_columns': len(columns),
+                            'preview_rows': 1,
+                            'total_rows': 1,
+                        }
+                    })
+
+            elif file_type == 'txt':
+                content = dataset.file.read().decode('utf-8', errors='replace')
+                lines = content.splitlines()
+                preview_lines = lines[:50]
+                return Response({
+                    'type': 'text',
+                    'lines': preview_lines,
+                    'stats': {
+                        'total_lines': len(lines),
+                        'preview_lines': len(preview_lines),
+                        'total_chars': len(content),
+                    }
+                })
 
         except Exception as e:
             return Response({'error': str(e)}, status=400)
 
-        return Response({'error': 'Aperçu non disponible pour ce type de fichier.'}, status=400)
+        return Response({'type': 'unsupported', 'error': 'Aperçu non disponible pour ce type de fichier.'}, status=400)
 
 
 class MyDatasetsView(generics.ListAPIView):
