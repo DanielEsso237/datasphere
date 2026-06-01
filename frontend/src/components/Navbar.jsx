@@ -1,14 +1,23 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useDrawer } from '../context/DrawerContext'
 import { Database, Upload, User, LogOut, LogIn, Menu, X } from 'lucide-react'
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 
 export default function Navbar() {
   const { user, logout } = useAuth()
+  const { openUpload } = useDrawer()
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
 
   const handleLogout = () => { logout(); navigate('/') }
+
+  const handlePublish = () => {
+    setOpen(false)
+    if (!user) { toast.error('Connectez-vous pour publier.'); navigate('/login'); return }
+    openUpload()
+  }
 
   return (
     <nav className="navbar">
@@ -24,11 +33,13 @@ export default function Navbar() {
 
         <div className={`nav-links ${open ? 'open' : ''}`}>
           <Link to="/datasets" onClick={() => setOpen(false)}>Explorer</Link>
+
+          <button onClick={handlePublish}>
+            <Upload size={15}/> Publier
+          </button>
+
           {user ? (
             <>
-              <Link to="/upload" onClick={() => setOpen(false)}>
-                <Upload size={15}/> Publier
-              </Link>
               <Link to="/dashboard" onClick={() => setOpen(false)}>
                 <User size={15}/> {user.username}
               </Link>
