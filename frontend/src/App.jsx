@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './context/AuthContext'
 import { DrawerProvider } from './context/DrawerContext'
 import Navbar from './components/Navbar'
+import AppLayout from './components/AppLayout'
 import ProtectedRoute from './components/ProtectedRoute'
 import GlobalUploadDrawer from './components/GlobalUploadDrawer'
 import Landing from './pages/Landing'
@@ -14,6 +15,11 @@ import Dashboard from './pages/Dashboard'
 import EditProfile from './pages/EditProfile'
 import NotFound from './pages/NotFound'
 
+// Pages qui utilisent le layout global avec sidebar
+function WithLayout({ children }) {
+  return <AppLayout>{children}</AppLayout>
+}
+
 export default function App() {
   return (
     <AuthProvider>
@@ -24,13 +30,29 @@ export default function App() {
           <GlobalUploadDrawer />
           <main>
             <Routes>
+              {/* Landing & auth : pas de sidebar */}
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/datasets" element={<DatasetList />} />
-              <Route path="/datasets/:id" element={<DatasetDetail />} />
-              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-              <Route path="/profile/edit" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
+
+              {/* Pages avec sidebar gauche */}
+              <Route path="/datasets" element={
+                <WithLayout><DatasetList /></WithLayout>
+              } />
+              <Route path="/datasets/:id" element={
+                <WithLayout><DatasetDetail /></WithLayout>
+              } />
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <WithLayout><Dashboard /></WithLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/profile/edit" element={
+                <ProtectedRoute>
+                  <WithLayout><EditProfile /></WithLayout>
+                </ProtectedRoute>
+              } />
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
