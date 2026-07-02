@@ -2129,9 +2129,7 @@ select option {
   padding: 14px 32px;
   background: var(--bg2);
   border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 60px;
-  z-index: 50;
+  /* Supprime position sticky et top */
   gap: 16px;
 }
 
@@ -2235,6 +2233,7 @@ select option {
   background: var(--bg2);
   border-bottom: 1px solid var(--border);
   overflow: hidden;
+  scroll-margin-top: 112px;
 }
 
 .kd-hero-cover {
