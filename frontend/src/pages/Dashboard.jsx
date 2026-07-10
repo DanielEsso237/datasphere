@@ -33,6 +33,12 @@ const DOMAIN_COVERS = {
   other: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&q=70',
 }
 
+const STATUS_LABELS = {
+  pending: { label: 'En attente', color: '#f59e0b' },
+  approved: { label: 'Approuvé', color: '#22c55e' },
+  rejected: { label: 'Refusé', color: '#ef4444' },
+}
+
 function DashDatasetCard({ dataset, onDelete, navigate }) {
   const cover = dataset.cover_image_url || DOMAIN_COVERS[dataset.domain] || DOMAIN_COVERS.other
   const fileColor = FILE_COLORS[dataset.file_type] || '#6b7280'
@@ -47,6 +53,14 @@ function DashDatasetCard({ dataset, onDelete, navigate }) {
         <span className="db-card-type" style={{ background: fileColor }}>
           {dataset.file_type?.toUpperCase()}
         </span>
+        {dataset.status !== 'approved' && (
+          <span className="db-card-status" style={{ background: STATUS_LABELS[dataset.status]?.color }}>
+            {STATUS_LABELS[dataset.status]?.label}
+          </span>
+       )}
+        {dataset.status === 'rejected' && dataset.rejection_reason && (
+          <p className="db-card-reject-reason">{dataset.rejection_reason}</p>
+       )}
       </div>
 
       {/* Body */}

@@ -30,8 +30,9 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'role', 'bio', 'institution', 'avatar', 'created_at', 'datasets_count']
-        read_only_fields = ['id', 'email', 'created_at']
+        fields = ['id', 'username', 'email', 'role', 'bio', 'institution', 'avatar',
+                  'created_at', 'datasets_count', 'is_staff']
+        read_only_fields = ['id', 'email', 'created_at', 'is_staff']
 
     def get_datasets_count(self, obj):
         return obj.dataset_set.count()

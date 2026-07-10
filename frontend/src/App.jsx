@@ -14,6 +14,8 @@ import DatasetDetail from './pages/DatasetDetail'
 import Dashboard from './pages/Dashboard'
 import EditProfile from './pages/EditProfile'
 import NotFound from './pages/NotFound'
+import AdminRoute from './components/AdminRoute'
+import AdminDashboard from './pages/AdminDashboard'
 
 // Pages qui utilisent le layout global avec sidebar
 function WithLayout({ children }) {
@@ -54,6 +56,12 @@ export default function App() {
               } />
 
               <Route path="*" element={<NotFound />} />
+
+              <Route path="/admin" element = {
+                <AdminRoute>
+                  <WithLayout><AdminDashboard /></WithLayout>
+                </AdminRoute>
+              }></Route>
             </Routes>
           </main>
         </BrowserRouter>
