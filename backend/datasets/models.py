@@ -30,7 +30,12 @@ class Dataset(models.Model):
     file_type = models.CharField(max_length=10, choices=FILE_TYPE_CHOICES, default='csv')
     file_size = models.BigIntegerField(default=0)
     tags = models.CharField(max_length=500, blank=True, help_text='Comma-separated tags')
-    cover_image = models.ImageField(upload_to='covers/', null=True, blank=True)  # ← NOUVEAU
+    cover_image = models.ImageField(upload_to='covers/', null=True, blank=True)
+    source = models.CharField(
+        max_length=500,
+        blank=True,
+        help_text="Nom de l'auteur original ou lien vers la source si le dataset ne vient pas de vous."
+    )
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     download_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)

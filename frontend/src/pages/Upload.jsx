@@ -13,7 +13,7 @@ const DOMAINS = [
 ]
 
 export default function Upload() {
-  const [form, setForm] = useState({ title:'', description:'', domain:'other', tags:'' })
+  const [form, setForm] = useState({ title:'', description:'', domain:'other', tags:'', source:'' })
   const [file, setFile] = useState(null)
   const [drag, setDrag] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -113,6 +113,15 @@ export default function Upload() {
             <label>Tags (séparés par des virgules)</label>
             <input placeholder="nutrition, cameroun, 2023, santé publique"
               value={form.tags} onChange={set('tags')}/>
+          </div>
+
+          <div className="field full">
+            <label>Source (optionnel)</label>
+            <input
+              placeholder="Votre nom si vous êtes l'auteur, ou lien/nom de la source originale si les données viennent d'ailleurs"
+              value={form.source}
+              onChange={set('source')}
+            />
           </div>
 
           <div className="field full">

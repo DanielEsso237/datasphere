@@ -133,7 +133,7 @@ export default function UploadDrawer({ onClose }) {
 
   const [activeTab, setActiveTab] = useState('file') // 'file' | 'code'
   const [form, setForm] = useState({
-    title: '', description: '', domain: 'other', tags: '', visibility: 'public',
+    title: '', description: '', domain: 'other', tags: '', visibility: 'public', source: '',
   })
   const [files,    setFiles]    = useState([])
   const [coverImg, setCoverImg] = useState(null)
@@ -268,6 +268,21 @@ export default function UploadDrawer({ onClose }) {
                 />
               </div>
 
+              {/* ── Source ── */}
+              <div className="upl-field">
+                <label className="upl-field-label">SOURCE <span className="upl-optional">(optionnel)</span></label>
+                <input
+                  className="upl-input"
+                  placeholder="Votre nom si vous êtes l'auteur, ou lien/nom de la source originale"
+                  value={form.source}
+                  onChange={set('source')}
+                />
+                <span className="upl-cover-hint">
+                  Laissez vide si vous êtes l'auteur original du dataset. Sinon, indiquez d'où viennent
+                  les données (organisme, site, lien…).
+                </span>
+              </div>
+
               {/* ── File zone + cover ── */}
               <div className="upl-section-divider">FICHIERS</div>
               <FileTab
@@ -297,6 +312,7 @@ data  = {
     "description": "Description…",
     "domain":      "health",
     "tags":        "tag1,tag2",
+    "source":      "",
 }
 
 r = requests.post(
@@ -317,7 +333,7 @@ print(r.json())`}</pre>
         {/* Footer */}
         <div className="upl-drawer-footer">
           <button className="upl-btn-reset" onClick={() => {
-            setForm({ title: '', description: '', domain: 'other', tags: '', visibility: 'public' })
+            setForm({ title: '', description: '', domain: 'other', tags: '', visibility: 'public', source: '' })
             setFiles([]); setCoverImg(null); setTitleError(false)
           }}>
             Réinitialiser
