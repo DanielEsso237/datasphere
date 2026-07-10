@@ -28,43 +28,53 @@ export default function Navbar() {
           <span>DataSphere</span>
         </Link>
 
-        <button className="nav-burger" onClick={() => setOpen(!open)}>
-          {open ? <X size={22}/> : <Menu size={22}/>}
-        </button>
+        {/*
+          La cloche de notifications est sortie de .nav-links :
+          - avant, la règle CSS ".nav-links button { padding: 6px 14px }" écrasait
+            le padding de ".notif-bell-btn" et déformait le bouton (trop petit / tassé).
+          - avant, elle était aussi masquée sur mobile tant que le menu burger
+            n'était pas ouvert. Elle est maintenant toujours visible.
+        */}
+        <div className="nav-right">
+          {user && <NotificationBell />}
 
-        <div className={`nav-links ${open ? 'open' : ''}`}>
-          <Link to="/datasets" onClick={() => setOpen(false)}>Explorer</Link>
-
-          <button onClick={handlePublish}>
-            <Upload size={15}/> Publier
+          <button className="nav-burger" onClick={() => setOpen(!open)}>
+            {open ? <X size={22}/> : <Menu size={22}/>}
           </button>
 
-          {user?.is_staff && (
-            <Link to="/admin" onClick={() => setOpen(false)}>
-              <ShieldCheck size={15}/> Admin
-            </Link>
-          )}
+          <div className={`nav-links ${open ? 'open' : ''}`}>
+            <Link to="/datasets" onClick={() => setOpen(false)}>Explorer</Link>
 
-          {user ? (
-            <>
-              {user && <NotificationBell />}
-              <Link to="/dashboard" onClick={() => setOpen(false)}>
-                <User size={15}/> {user.username}
+            <button onClick={handlePublish}>
+              <Upload size={15}/> Publier
+            </button>
+
+            {user?.is_staff && (
+              <Link to="/admin" onClick={() => setOpen(false)}>
+                <ShieldCheck size={15}/> Admin
               </Link>
-              <button onClick={handleLogout} className="btn-logout">
-                <LogOut size={15}/> Déconnexion
-              </button>
-            </>
-          ) : (
-            <>
-              <Link to="/login" className="btn-nav-login" onClick={() => setOpen(false)}>
-                <LogIn size={15}/> Connexion
-              </Link>
-              <Link to="/register" className="btn-nav-register" onClick={() => setOpen(false)}>
-                S'inscrire
-              </Link>
-            </>
-          )}
+            )}
+
+            {user ? (
+              <>
+                <Link to="/dashboard" onClick={() => setOpen(false)}>
+                  <User size={15}/> {user.username}
+                </Link>
+                <button onClick={handleLogout} className="btn-logout">
+                  <LogOut size={15}/> Déconnexion
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="btn-nav-login" onClick={() => setOpen(false)}>
+                  <LogIn size={15}/> Connexion
+                </Link>
+                <Link to="/register" className="btn-nav-register" onClick={() => setOpen(false)}>
+                  S'inscrire
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </nav>

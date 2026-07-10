@@ -55,13 +55,15 @@ export default function App() {
                 </ProtectedRoute>
               } />
 
-              <Route path="*" element={<NotFound />} />
-
-              <Route path="/admin" element = {
+              {/* Admin */}
+              <Route path="/admin" element={
                 <AdminRoute>
                   <WithLayout><AdminDashboard /></WithLayout>
                 </AdminRoute>
-              }></Route>
+              } />
+
+              {/* Catch-all : toujours en dernier */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
         </BrowserRouter>
