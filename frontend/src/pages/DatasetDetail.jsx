@@ -1,29 +1,29 @@
-import { useState, useEffect } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import {
   getDataset, downloadDataset, previewDataset,
   rateDataset, getComments, addComment, deleteComment, deleteDataset, getDatasets
-} from '../services/api'
-import StarRating from '../components/StarRating'
-import Spinner from '../components/Spinner'
+} from '../services/api';
+import StarRating from '../components/StarRating';
+import Spinner from '../components/Spinner';
 import {
   Download, Trash2, User, Calendar, Tag, BarChart2, Send,
   ChevronUp, Code, MessageSquare, Lightbulb, Database,
   FileText, Hash, Clock, Eye, Share2, Bookmark, MoreHorizontal,
-  TrendingUp, Star, ExternalLink, Table2, AlignLeft
-} from 'lucide-react'
-import toast from 'react-hot-toast'
+  TrendingUp, Star, ExternalLink, Table2, AlignLeft, Link2
+} from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const DOMAIN_LABELS = {
   health: 'Santé', agriculture: 'Agriculture', education: 'Éducation',
   environment: 'Environnement', economy: 'Économie', technology: 'Technologie',
   social: 'Sc. Sociales', physics: 'Physique', biology: 'Biologie', other: 'Autre',
-}
+};
 
 const FILE_COLORS = {
   csv: '#22c55e', json: '#f59e0b', xlsx: '#3b82f6', txt: '#8b5cf6', other: '#6b7280',
-}
+};
 
 const DOMAIN_COVERS = {
   health: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=600&q=80',
@@ -36,14 +36,14 @@ const DOMAIN_COVERS = {
   physics: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600&q=80',
   biology: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&q=80',
   other: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80',
-}
+};
 
 // ── Preview Components ──────────────────────────────────────────────
 
 function TablePreview({ preview }) {
-  const [viewMode, setViewMode] = useState('detail') // 'detail' | 'compact' | 'column'
+  const [viewMode, setViewMode] = useState('detail');
 
-  if (!preview?.columns?.length) return null
+  if (!preview?.columns?.length) return null;
 
   return (
     <div className="kd-preview-wrap">
@@ -59,7 +59,9 @@ function TablePreview({ preview }) {
               key={v}
               className={`kd-vtab ${viewMode === v ? 'active' : ''}`}
               onClick={() => setViewMode(v)}
-            >{l}</button>
+            >
+              {l}
+            </button>
           ))}
         </div>
       </div>
@@ -67,15 +69,15 @@ function TablePreview({ preview }) {
       {viewMode === 'column' ? (
         <div className="kd-col-grid">
           {preview.columns.map((col, i) => {
-            const values = preview.rows.map(r => r[col]).filter(v => v != null && v !== '')
-            const sample = values.slice(0, 3).join(', ')
+            const values = preview.rows.map(r => r[col]).filter(v => v != null && v !== '');
+            const sample = values.slice(0, 3).join(', ');
             return (
               <div key={i} className="kd-col-card">
                 <div className="kd-col-name">{col}</div>
                 <div className="kd-col-sample">{sample || '—'}</div>
                 <div className="kd-col-count">{values.length} valeurs</div>
               </div>
-            )
+            );
           })}
         </div>
       ) : (
@@ -113,7 +115,7 @@ function TablePreview({ preview }) {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 function TextPreview({ preview }) {
@@ -137,32 +139,32 @@ function TextPreview({ preview }) {
         </pre>
       </div>
     </div>
-  )
+  );
 }
 
-function PreviewPanel({ datasetId, fileType }) {
-  const [preview, setPreview] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+function PreviewPanel({ datasetId }) {
+  const [preview, setPreview] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
     previewDataset(datasetId)
       .then(res => setPreview(res.data))
       .catch(err => {
-        const msg = err.response?.data?.error || 'Erreur lors du chargement de l\'aperçu.'
-        setError(msg)
+        const msg = err.response?.data?.error || 'Erreur lors du chargement de l\'aperçu.';
+        setError(msg);
       })
-      .finally(() => setLoading(false))
-  }, [datasetId])
+      .finally(() => setLoading(false));
+  }, [datasetId]);
 
   if (loading) return (
     <div className="kd-preview-loading">
       <div className="spinner" style={{ width: 32, height: 32 }} />
       <span>Chargement de l'aperçu…</span>
     </div>
-  )
+  );
 
   if (error) return (
     <div className="kd-preview-error">
@@ -170,30 +172,31 @@ function PreviewPanel({ datasetId, fileType }) {
       <p>{error}</p>
       <span className="kd-preview-error-hint">Format supporté : CSV, JSON, TXT</span>
     </div>
-  )
+  );
 
-  if (!preview) return null
+  if (!preview) return null;
 
-  if (preview.type === 'table') return <TablePreview preview={preview} />
-  if (preview.type === 'text') return <TextPreview preview={preview} />
+  if (preview.type === 'table') return <TablePreview preview={preview} />;
+  if (preview.type === 'text') return <TextPreview preview={preview} />;
 
   return (
     <div className="kd-preview-error">
       <FileText size={40} />
       <p>Aperçu non disponible pour ce format.</p>
     </div>
-  )
+  );
 }
 
 // ── Related Dataset Mini-Card ────────────────────────────────────────
 
 function RelatedCard({ dataset }) {
-  const navigate = useNavigate()
-  const cover = dataset.cover_image_url || DOMAIN_COVERS[dataset.domain] || DOMAIN_COVERS.other
+  const navigate = useNavigate();
+  const cover = dataset.cover_image_url || DOMAIN_COVERS[dataset.domain] || DOMAIN_COVERS.other;
+
   return (
     <div className="kd-related-card" onClick={() => navigate(`/datasets/${dataset.id}`)}>
       <div className="kd-related-cover">
-        <img src={cover} alt="" onError={e => { e.target.style.display = 'none' }} />
+        <img src={cover} alt="" onError={e => { e.target.style.display = 'none'; }} />
       </div>
       <div className="kd-related-body">
         <span
@@ -210,121 +213,127 @@ function RelatedCard({ dataset }) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // ── Main Component ───────────────────────────────────────────────────
 
 export default function DatasetDetail() {
-  const { id } = useParams()
-  const { user } = useAuth()
-  const navigate = useNavigate()
+  const { id } = useParams();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
-  const [dataset, setDataset] = useState(null)
-  const [comments, setComments] = useState([])
-  const [related, setRelated] = useState([])
-  const [comment, setComment] = useState('')
-  const [myRating, setMyRating] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState('datacard')
-  const [upvoted, setUpvoted] = useState(false)
+  const [dataset, setDataset] = useState(null);
+  const [comments, setComments] = useState([]);
+  const [related, setRelated] = useState([]);
+  const [comment, setComment] = useState('');
+  const [myRating, setMyRating] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState('datacard');
+  const [upvoted, setUpvoted] = useState(false);
 
   useEffect(() => {
-    setLoading(true)
+    setLoading(true);
     Promise.all([
       getDataset(id),
       getComments(id),
     ]).then(([ds, cm]) => {
-      setDataset(ds.data)
-      setComments(cm.data.results || cm.data)
-      // Fetch related datasets by same domain
-      return getDatasets({ domain: ds.data.domain, sort: 'popular' })
+      setDataset(ds.data);
+      setComments(cm.data.results || cm.data);
+
+      return getDatasets({ domain: ds.data.domain, sort: 'popular' });
     }).then(rel => {
-      const results = rel.data.results || rel.data
-      setRelated(results.filter(d => String(d.id) !== String(id)).slice(0, 4))
-    }).finally(() => setLoading(false))
-  }, [id])
+      const results = rel.data.results || rel.data;
+      setRelated(results.filter(d => String(d.id) !== String(id)).slice(0, 4));
+    }).finally(() => setLoading(false));
+  }, [id]);
 
   const handleDownload = async () => {
-    if (!user) return toast.error('Connectez-vous pour télécharger.')
+    if (!user) return toast.error('Connectez-vous pour télécharger.');
+
     try {
-      const res = await downloadDataset(id)
-      const url = URL.createObjectURL(new Blob([res.data]))
-      const a = document.createElement('a')
-      a.href = url
-      a.download = dataset.title
-      a.click()
-      URL.revokeObjectURL(url)
-      const { data } = await getDataset(id)
-      setDataset(data)
-      toast.success('Téléchargement démarré !')
+      const res = await downloadDataset(id);
+      const url = URL.createObjectURL(new Blob([res.data]));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${dataset.title}.${dataset.file_type || 'csv'}`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      const { data } = await getDataset(id);
+      setDataset(data);
+      toast.success('Téléchargement démarré !');
     } catch {
-      toast.error('Erreur lors du téléchargement.')
+      toast.error('Erreur lors du téléchargement.');
     }
-  }
+  };
 
   const handleRate = async (score) => {
-    if (!user) return toast.error('Connectez-vous pour noter.')
-    setMyRating(score)
+    if (!user) return toast.error('Connectez-vous pour noter.');
+    setMyRating(score);
     try {
-      await rateDataset(id, score)
-      const { data } = await getDataset(id)
-      setDataset(data)
-      toast.success('Note enregistrée !')
+      await rateDataset(id, score);
+      const { data } = await getDataset(id);
+      setDataset(data);
+      toast.success('Note enregistrée !');
     } catch {
-      toast.error('Erreur.')
+      toast.error('Erreur.');
     }
-  }
+  };
 
   const handleComment = async (e) => {
-    e.preventDefault()
-    if (!comment.trim()) return
+    e.preventDefault();
+    if (!comment.trim()) return;
     try {
-      const { data } = await addComment(id, comment)
-      setComments(prev => [data, ...prev])
-      setComment('')
+      const { data } = await addComment(id, comment);
+      setComments(prev => [data, ...prev]);
+      setComment('');
+      toast.success('Commentaire ajouté');
     } catch {
-      toast.error('Erreur lors du commentaire.')
+      toast.error('Erreur lors du commentaire.');
     }
-  }
+  };
 
   const handleDeleteComment = async (cid) => {
     try {
-      await deleteComment(cid)
-      setComments(prev => prev.filter(c => c.id !== cid))
+      await deleteComment(cid);
+      setComments(prev => prev.filter(c => c.id !== cid));
     } catch {
-      toast.error('Erreur.')
+      toast.error('Erreur.');
     }
-  }
+  };
 
   const handleDelete = async () => {
-    if (!window.confirm('Supprimer ce dataset ?')) return
+    if (!window.confirm('Supprimer ce dataset ?')) return;
     try {
-      await deleteDataset(id)
-      toast.success('Dataset supprimé.')
-      navigate('/dashboard')
+      await deleteDataset(id);
+      toast.success('Dataset supprimé.');
+      navigate('/dashboard');
     } catch {
-      toast.error('Erreur lors de la suppression.')
+      toast.error('Erreur lors de la suppression.');
     }
-  }
+  };
 
-  if (loading) return <Spinner />
-  if (!dataset) return <div className="page-container"><p>Dataset introuvable.</p></div>
+  if (loading) return <Spinner />;
+  if (!dataset) return <div className="page-container"><p>Dataset introuvable.</p></div>;
 
-  const isOwner = user?.id === dataset.uploaded_by?.id
-  const date = new Date(dataset.created_at).toLocaleDateString('fr-FR', { dateStyle: 'long' })
-  const fileColor = FILE_COLORS[dataset.file_type] || FILE_COLORS.other
-  const cover = dataset.cover_image_url || DOMAIN_COVERS[dataset.domain] || DOMAIN_COVERS.other
+  const isOwner = user?.id === dataset.uploaded_by?.id;
+  const date = new Date(dataset.created_at).toLocaleDateString('fr-FR', { dateStyle: 'long' });
+  const fileColor = FILE_COLORS[dataset.file_type] || FILE_COLORS.other;
+  const cover = dataset.cover_image_url || DOMAIN_COVERS[dataset.domain] || DOMAIN_COVERS.other;
+
+  const isExternalSource = dataset.source && dataset.source !== dataset.uploaded_by?.username;
+  const isSourceLink = /^https?:\/\//i.test(dataset.source || '');
 
   const TABS = [
     { id: 'datacard', label: 'Data Card', icon: <Database size={15} /> },
-    { id: 'preview', label: `Aperçu`, icon: <Table2 size={15} /> },
+    { id: 'preview', label: 'Aperçu', icon: <Table2 size={15} /> },
     { id: 'discussion', label: `Discussion (${comments.length})`, icon: <MessageSquare size={15} /> },
-  ]
+  ];
 
   return (
     <div className="kd-root">
-      {/* ── Top bar ── */}
+      {/* Top bar */}
       <div className="kd-topbar">
         <div className="kd-topbar-left">
           <div className="kd-breadcrumb">
@@ -360,13 +369,12 @@ export default function DatasetDetail() {
       </div>
 
       <div className="kd-layout">
-        {/* ── Main column ── */}
+        {/* Main column */}
         <div className="kd-main">
-
-          {/* ── Hero ── */}
+          {/* Hero */}
           <div className="kd-hero">
             <div className="kd-hero-cover">
-              <img src={cover} alt={dataset.title} onError={e => { e.target.style.display = 'none' }} />
+              <img src={cover} alt={dataset.title} onError={e => { e.target.style.display = 'none'; }} />
               <div className="kd-hero-cover-overlay" />
             </div>
             <div className="kd-hero-body">
@@ -381,7 +389,8 @@ export default function DatasetDetail() {
                 {dataset.description?.slice(0, 140)}{dataset.description?.length > 140 ? '…' : ''}
               </p>
               <div className="kd-hero-stats">
-                <span><User size={14} />
+                <span>
+                  <User size={14} />
                   <Link to={`/profile/${dataset.uploaded_by?.username}`} className="kd-author-link">
                     {dataset.uploaded_by?.username}
                   </Link>
@@ -397,7 +406,7 @@ export default function DatasetDetail() {
             </div>
           </div>
 
-          {/* ── Tabs ── */}
+          {/* Tabs */}
           <div className="kd-tabs">
             {TABS.map(t => (
               <button
@@ -410,16 +419,34 @@ export default function DatasetDetail() {
             ))}
           </div>
 
-          {/* ── Tab Content ── */}
+          {/* Tab Content */}
           <div className="kd-tab-content">
-
-            {/* DATA CARD TAB */}
+            {/* DATA CARD */}
             {tab === 'datacard' && (
               <div className="kd-datacard">
                 <section className="kd-section">
                   <h2 className="kd-section-title">À propos du dataset</h2>
                   <p className="kd-about-text">{dataset.description}</p>
                 </section>
+
+                {isExternalSource && (
+                  <section className="kd-section">
+                    <h2 className="kd-section-title"><Link2 size={16} /> Source des données</h2>
+                    {isSourceLink ? (
+                      <a
+                        href={dataset.source}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="kd-author-link"
+                        style={{ fontSize: 14, wordBreak: 'break-all' }}
+                      >
+                        {dataset.source} <ExternalLink size={13} style={{ display: 'inline', verticalAlign: 'middle' }} />
+                      </a>
+                    ) : (
+                      <p className="kd-about-text">{dataset.source}</p>
+                    )}
+                  </section>
+                )}
 
                 {dataset.tags && (
                   <section className="kd-section">
@@ -444,7 +471,6 @@ export default function DatasetDetail() {
                   </section>
                 )}
 
-                {/* Related datasets */}
                 {related.length > 0 && (
                   <section className="kd-section">
                     <h2 className="kd-section-title">
@@ -459,7 +485,7 @@ export default function DatasetDetail() {
               </div>
             )}
 
-            {/* PREVIEW TAB */}
+            {/* PREVIEW */}
             {tab === 'preview' && (
               <div className="kd-preview-tab">
                 <div className="kd-file-header">
@@ -472,11 +498,11 @@ export default function DatasetDetail() {
                     <Download size={13} /> Télécharger
                   </button>
                 </div>
-                <PreviewPanel datasetId={id} fileType={dataset.file_type} />
+                <PreviewPanel datasetId={id} />
               </div>
             )}
 
-            {/* DISCUSSION TAB */}
+            {/* DISCUSSION */}
             {tab === 'discussion' && (
               <div className="kd-discussion">
                 {user ? (
@@ -545,9 +571,8 @@ export default function DatasetDetail() {
           </div>
         </div>
 
-        {/* ── Sidebar ── */}
+        {/* Sidebar */}
         <aside className="kd-sidebar">
-          {/* Usability score */}
           <div className="kd-sidebar-card">
             <div className="kd-usability">
               <span className="kd-usability-label">Usabilité</span>
@@ -557,7 +582,6 @@ export default function DatasetDetail() {
             </div>
           </div>
 
-          {/* Metadata */}
           <div className="kd-sidebar-card">
             <h3 className="kd-sidebar-title">Informations</h3>
             <div className="kd-meta-list">
@@ -591,6 +615,20 @@ export default function DatasetDetail() {
                   </Link>
                 </span>
               </div>
+              {isExternalSource && (
+                <div className="kd-meta-item">
+                  <span className="kd-meta-key">Source</span>
+                  <span className="kd-meta-val">
+                    {isSourceLink ? (
+                      <a href={dataset.source} target="_blank" rel="noopener noreferrer" className="kd-author-link">
+                        Lien externe
+                      </a>
+                    ) : (
+                      dataset.source
+                    )}
+                  </span>
+                </div>
+              )}
               {dataset.uploaded_by?.institution && (
                 <div className="kd-meta-item">
                   <span className="kd-meta-key">Institution</span>
@@ -600,7 +638,6 @@ export default function DatasetDetail() {
             </div>
           </div>
 
-          {/* Summary */}
           <div className="kd-sidebar-card">
             <h3 className="kd-sidebar-title">Résumé</h3>
             <div className="kd-summary-stats">
@@ -628,7 +665,6 @@ export default function DatasetDetail() {
             </div>
           </div>
 
-          {/* Tags sidebar */}
           {dataset.tags && (
             <div className="kd-sidebar-card">
               <h3 className="kd-sidebar-title">Tags</h3>
@@ -640,7 +676,6 @@ export default function DatasetDetail() {
             </div>
           )}
 
-          {/* Download CTA */}
           <button className="kd-dl-cta" onClick={handleDownload}>
             <Download size={18} />
             Télécharger ({dataset.file_size_display})
@@ -648,5 +683,5 @@ export default function DatasetDetail() {
         </aside>
       </div>
     </div>
-  )
+  );
 }

@@ -8,7 +8,7 @@ class DatasetListSerializer(serializers.ModelSerializer):
     ratings_count = serializers.ReadOnlyField()
     comments_count = serializers.ReadOnlyField()
     file_size_display = serializers.SerializerMethodField()
-    cover_image_url = serializers.SerializerMethodField()  # ← NOUVEAU
+    cover_image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Dataset
@@ -16,13 +16,13 @@ class DatasetListSerializer(serializers.ModelSerializer):
             'id', 'title', 'description', 'domain', 'file_type',
             'file_size', 'file_size_display', 'tags', 'uploaded_by',
             'download_count', 'avg_rating', 'ratings_count',
-            'comments_count', 'created_at', 'cover_image_url',  # ← NOUVEAU
+            'comments_count', 'created_at', 'cover_image_url', 'source',
         ]
 
     def get_file_size_display(self, obj):
         return obj.get_file_size_display()
 
-    def get_cover_image_url(self, obj):  # ← NOUVEAU
+    def get_cover_image_url(self, obj):
         request = self.context.get('request')
         if obj.cover_image and request:
             return request.build_absolute_uri(obj.cover_image.url)
@@ -45,7 +45,7 @@ class DatasetDetailSerializer(DatasetListSerializer):
 class DatasetCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dataset
-        fields = ['id', 'title', 'description', 'domain', 'tags', 'file', 'cover_image']  # ← cover_image ajouté
+        fields = ['id', 'title', 'description', 'domain', 'tags', 'file', 'cover_image', 'source']
 
     def validate_file(self, value):
         allowed_types = ['text/csv', 'application/json',
@@ -59,6 +59,9 @@ class DatasetCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Fichier trop volumineux (max 50MB).')
         return value
 
+    def validate_source(self, value):
+        return value.strip()
+
     def create(self, validated_data):
         file = validated_data.get('file')
         ext = file.name.split('.')[-1].lower()
@@ -66,4 +69,9 @@ class DatasetCreateSerializer(serializers.ModelSerializer):
         validated_data['file_type'] = file_type_map.get(ext, 'other')
         validated_data['file_size'] = file.size
         validated_data['uploaded_by'] = self.context['request'].user
+
+        # Si l'utilisateur ne précise pas de source, il est considéré comme l'auteur original
+        if not validated_data.get('source'):
+            validated_data['source'] = self.context['request'].user.username
+
         return super().create(validated_data)
