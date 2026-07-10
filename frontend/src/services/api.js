@@ -48,5 +48,16 @@ export const rateDataset = (id, score) => api.post(`/datasets/${id}/rate/`, { sc
 export const getComments = (id) => api.get(`/datasets/${id}/comments/`)
 export const addComment = (id, content) => api.post(`/datasets/${id}/comments/`, { content })
 export const deleteComment = (id) => api.delete(`/comments/${id}/delete/`)
+// ── Notifications ──
+export const getNotifications = () => api.get('/notifications/')
+export const markNotificationRead = (id) => api.post(`/notifications/${id}/read/`)
+export const markAllNotificationsRead = () => api.post('/notifications/read-all/')
+
+// ── Admin ──
+export const getAdminStats = () => api.get('/datasets/admin/stats/')
+export const getPendingDatasets = () => api.get('/datasets/admin/pending/')
+export const getAllDatasetsAdmin = (status) => api.get('/datasets/admin/all/', { params: { status } })
+export const reviewDataset = (id, action, reason = '') =>
+  api.post(`/datasets/admin/${id}/review/`, { action, reason })
 
 export default api

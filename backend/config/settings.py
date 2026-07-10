@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'users',
     'datasets',
     'interactions',
+    'notifications',
 ]
 
 MIDDLEWARE = [

@@ -2,6 +2,12 @@ from django.db import models
 from django.conf import settings
 
 class Dataset(models.Model):
+
+    STATUS_CHOICES = [
+        ('pending', 'En attente'),
+        ('approved', 'Approuvé'),
+        ('rejected', 'Refusé'),
+    ]
     DOMAIN_CHOICES = [
         ('health', 'Santé'),
         ('agriculture', 'Agriculture'),
@@ -23,6 +29,13 @@ class Dataset(models.Model):
         ('other', 'Autre'),
     ]
 
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    rejection_reason = models.TextField(blank=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='reviewed_datasets')
+
     title = models.CharField(max_length=255)
     description = models.TextField()
     domain = models.CharField(max_length=50, choices=DOMAIN_CHOICES, default='other')
@@ -40,6 +53,7 @@ class Dataset(models.Model):
     download_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
 
     class Meta:
         ordering = ['-created_at']

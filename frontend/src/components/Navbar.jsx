@@ -1,9 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useDrawer } from '../context/DrawerContext'
-import { Database, Upload, User, LogOut, LogIn, Menu, X } from 'lucide-react'
+import { Database, Upload, User, LogOut, LogIn, Menu, X, ShieldCheck } from 'lucide-react'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
+import NotificationBell from './NotificationBell'
 
 export default function Navbar() {
   const { user, logout } = useAuth()
@@ -38,8 +39,15 @@ export default function Navbar() {
             <Upload size={15}/> Publier
           </button>
 
+          {user?.is_staff && (
+            <Link to="/admin" onClick={() => setOpen(false)}>
+              <ShieldCheck size={15}/> Admin
+            </Link>
+          )}
+
           {user ? (
             <>
+              {user && <NotificationBell />}
               <Link to="/dashboard" onClick={() => setOpen(false)}>
                 <User size={15}/> {user.username}
               </Link>

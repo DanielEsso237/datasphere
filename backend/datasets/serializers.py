@@ -17,6 +17,7 @@ class DatasetListSerializer(serializers.ModelSerializer):
             'file_size', 'file_size_display', 'tags', 'uploaded_by',
             'download_count', 'avg_rating', 'ratings_count',
             'comments_count', 'created_at', 'cover_image_url', 'source',
+            'status', 'rejection_reason'
         ]
 
     def get_file_size_display(self, obj):
@@ -45,7 +46,8 @@ class DatasetDetailSerializer(DatasetListSerializer):
 class DatasetCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dataset
-        fields = ['id', 'title', 'description', 'domain', 'tags', 'file', 'cover_image', 'source']
+        fields = ['id', 'title', 'description', 'domain', 'tags', 'file', 'cover_image', 'source', 'status']
+        read_only_fieds = ['status']
 
     def validate_file(self, value):
         allowed_types = ['text/csv', 'application/json',
@@ -69,6 +71,7 @@ class DatasetCreateSerializer(serializers.ModelSerializer):
         validated_data['file_type'] = file_type_map.get(ext, 'other')
         validated_data['file_size'] = file.size
         validated_data['uploaded_by'] = self.context['request'].user
+        validated_data['status'] = 'pending'
 
         # Si l'utilisateur ne précise pas de source, il est considéré comme l'auteur original
         if not validated_data.get('source'):
