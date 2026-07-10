@@ -47,7 +47,9 @@ class DatasetCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dataset
         fields = ['id', 'title', 'description', 'domain', 'tags', 'file', 'cover_image', 'source', 'status']
-        read_only_fieds = ['status']
+        # NOTE: c'était "read_only_fieds" (typo) avant -> le champ 'status' n'était
+        # jamais réellement protégé en écriture. On corrige le nom de l'attribut.
+        read_only_fields = ['id', 'status']
 
     def validate_file(self, value):
         allowed_types = ['text/csv', 'application/json',
@@ -71,6 +73,8 @@ class DatasetCreateSerializer(serializers.ModelSerializer):
         validated_data['file_type'] = file_type_map.get(ext, 'other')
         validated_data['file_size'] = file.size
         validated_data['uploaded_by'] = self.context['request'].user
+
+        # Toute nouvelle publication part TOUJOURS en attente de validation admin.
         validated_data['status'] = 'pending'
 
         # Si l'utilisateur ne précise pas de source, il est considéré comme l'auteur original

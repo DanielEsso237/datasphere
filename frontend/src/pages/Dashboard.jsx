@@ -7,7 +7,7 @@ import Spinner from '../components/Spinner'
 import {
   Upload, Database, Download, Star, Building,
   Edit3, Trash2, Plus, TrendingUp, MessageSquare,
-  Calendar, FileText, ChevronRight, Award
+  Calendar, FileText, ChevronRight, Award, ShieldCheck
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -150,6 +150,18 @@ export default function Dashboard() {
             <div className="db-profile-name-row">
               <h1 className="db-profile-name">{user?.username}</h1>
               <span className="db-role-badge">{roleLabel}</span>
+              {/* Badge distinct pour bien différencier le rôle métier (Étudiant/Chercheur)
+                  du statut administrateur (is_staff), qui sont deux notions séparées. */}
+              {user?.is_staff && (
+                <span className="db-role-badge" style={{
+                  background: 'rgba(239,68,68,0.12)',
+                  borderColor: 'rgba(239,68,68,0.35)',
+                  color: 'var(--red)'
+                }}>
+                  <ShieldCheck size={12} style={{ display: 'inline', verticalAlign: '-2px', marginRight: 4 }} />
+                  Administrateur
+                </span>
+              )}
             </div>
             {user?.institution && (
               <p className="db-profile-detail"><Building size={13} /> {user.institution}</p>
@@ -158,6 +170,11 @@ export default function Dashboard() {
             <p className="db-profile-email">{user?.email}</p>
           </div>
           <div className="db-banner-actions">
+            {user?.is_staff && (
+              <Link to="/admin" className="db-edit-btn">
+                <ShieldCheck size={14} /> Espace admin
+              </Link>
+            )}
             <Link to="/profile/edit" className="db-edit-btn">
               <Edit3 size={14} /> Modifier le profil
             </Link>
