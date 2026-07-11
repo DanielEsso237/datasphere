@@ -1,6 +1,8 @@
 import csv, json, io
+from datetime import datetime
 from django.utils import timezone
 from django.db.models import Count, Sum, Q
+from django.db.models.functions import TruncMonth
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -15,6 +17,22 @@ from .serializers import DatasetListSerializer, DatasetDetailSerializer, Dataset
 from notifications.models import Notification
 
 User = get_user_model()
+
+MONTH_LABELS_FR = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
+
+
+def _last_n_months(n=6):
+    """Retourne une liste de (année, mois) pour les n derniers mois, du plus ancien au plus récent."""
+    today = timezone.now()
+    y, m = today.year, today.month
+    months = []
+    for _ in range(n):
+        months.append((y, m))
+        m -= 1
+        if m == 0:
+            m = 12
+            y -= 1
+    return list(reversed(months))
 
 
 class DatasetListView(generics.ListAPIView):
@@ -244,6 +262,40 @@ class AdminStatsView(APIView):
             .values('domain').annotate(count=Count('id')).order_by('-count')
         )
 
+        status_breakdown = [
+            {'status': 'pending', 'label': 'En attente', 'count': pending},
+            {'status': 'approved', 'label': 'Approuvé', 'count': approved},
+            {'status': 'rejected', 'label': 'Refusé', 'count': rejected},
+        ]
+
+        # ── Évolution sur les 6 derniers mois (nouveaux datasets / nouveaux utilisateurs) ──
+        months = _last_n_months(6)
+        start_year, start_month = months[0]
+        period_start = timezone.make_aware(datetime(start_year, start_month, 1))
+
+        dataset_counts = (
+            Dataset.objects.filter(created_at__gte=period_start)
+            .annotate(month=TruncMonth('created_at'))
+            .values('month').annotate(count=Count('id'))
+        )
+        dataset_map = {(d['month'].year, d['month'].month): d['count'] for d in dataset_counts}
+
+        user_counts = (
+            User.objects.filter(date_joined__gte=period_start)
+            .annotate(month=TruncMonth('date_joined'))
+            .values('month').annotate(count=Count('id'))
+        )
+        user_map = {(u['month'].year, u['month'].month): u['count'] for u in user_counts}
+
+        monthly_trend = [
+            {
+                'month': f'{MONTH_LABELS_FR[m - 1]} {y}',
+                'datasets': dataset_map.get((y, m), 0),
+                'users': user_map.get((y, m), 0),
+            }
+            for (y, m) in months
+        ]
+
         recent_users = list(
             User.objects.order_by('-date_joined').values('id', 'username', 'email', 'role', 'date_joined')[:5]
         )
@@ -260,6 +312,8 @@ class AdminStatsView(APIView):
             'rejected': rejected,
             'total_downloads': total_downloads,
             'by_domain': by_domain,
+            'status_breakdown': status_breakdown,
+            'monthly_trend': monthly_trend,
             'recent_users': recent_users,
             'recent_datasets': recent_datasets,
         })
