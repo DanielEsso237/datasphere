@@ -11,7 +11,7 @@ import {
   Download, Trash2, User, Calendar, Tag, BarChart2, Send,
   ChevronUp, Code, MessageSquare, Lightbulb, Database,
   FileText, Hash, Clock, Eye, Share2, Bookmark, MoreHorizontal,
-  TrendingUp, Star, ExternalLink, Table2, AlignLeft, Link2
+  TrendingUp, Star, ExternalLink, Table2, AlignLeft, Link2, Users
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -325,6 +325,11 @@ export default function DatasetDetail() {
   const isExternalSource = dataset.source && dataset.source !== dataset.uploaded_by?.username;
   const isSourceLink = /^https?:\/\//i.test(dataset.source || '');
 
+  const contributorsList = (dataset.contributors || '')
+    .split(',')
+    .map(c => c.trim())
+    .filter(Boolean);
+
   const TABS = [
     { id: 'datacard', label: 'Data Card', icon: <Database size={15} /> },
     { id: 'preview', label: 'Aperçu', icon: <Table2 size={15} /> },
@@ -445,6 +450,17 @@ export default function DatasetDetail() {
                     ) : (
                       <p className="kd-about-text">{dataset.source}</p>
                     )}
+                  </section>
+                )}
+
+                {contributorsList.length > 0 && (
+                  <section className="kd-section">
+                    <h2 className="kd-section-title"><Users size={16} /> Contributeurs</h2>
+                    <div className="kd-tags">
+                      {contributorsList.map((c, i) => (
+                        <span key={i} className="kd-tag">{c}</span>
+                      ))}
+                    </div>
                   </section>
                 )}
 
