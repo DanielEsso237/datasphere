@@ -21,7 +21,8 @@ export default function Login() {
       const meRes = await getMe()
       loginUser({ access: data.access, refresh: data.refresh }, meRes.data)
       toast.success('Connexion réussie !')
-      navigate('/dashboard')
+      // Un administrateur est redirigé en priorité vers son dashboard admin.
+      navigate(meRes.data.is_staff ? '/admin' : '/dashboard')
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Identifiants incorrects.')
     } finally {

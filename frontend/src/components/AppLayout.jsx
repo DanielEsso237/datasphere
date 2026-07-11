@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import { useDrawer } from '../context/DrawerContext'
 import {
   Database, TrendingUp, Star, User, Home,
-  Plus, Upload, LogIn, Settings, ChevronRight
+  Plus, Upload, LogIn, Settings, ChevronRight, ShieldCheck
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -23,6 +23,10 @@ export default function AppLayout({ children }) {
     openUpload()
   }
 
+  const roleLabel = user?.is_staff
+    ? 'Administrateur'
+    : (user?.role === 'researcher' ? 'Chercheur' : 'Étudiant')
+
   return (
     <div className="gl-root">
       {/* ── Sidebar gauche ── */}
@@ -41,6 +45,11 @@ export default function AppLayout({ children }) {
           {user && (
             <Link to="/dashboard" className={`gl-nav-item ${isActive('/dashboard') ? 'active' : ''}`}>
               <Star size={17} /> Mon espace
+            </Link>
+          )}
+          {user?.is_staff && (
+            <Link to="/admin" className={`gl-nav-item ${isActive('/admin') ? 'active' : ''}`}>
+              <ShieldCheck size={17} /> Administration
             </Link>
           )}
         </nav>
@@ -82,7 +91,7 @@ export default function AppLayout({ children }) {
             <div className="gl-user-avatar">{user.username[0].toUpperCase()}</div>
             <div className="gl-user-info">
               <span className="gl-user-name">{user.username}</span>
-              <span className="gl-user-role">{user.role === 'researcher' ? 'Chercheur' : 'Étudiant'}</span>
+              <span className="gl-user-role">{roleLabel}</span>
             </div>
           </div>
         )}
