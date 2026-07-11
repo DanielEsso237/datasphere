@@ -43,6 +43,11 @@ class Dataset(models.Model):
     file_type = models.CharField(max_length=10, choices=FILE_TYPE_CHOICES, default='csv')
     file_size = models.BigIntegerField(default=0)
     tags = models.CharField(max_length=500, blank=True, help_text='Comma-separated tags')
+    contributors = models.CharField(
+        max_length=1000,
+        blank=True,
+        help_text="Personnes ayant contribué à faire évoluer ce dataset, séparées par des virgules."
+    )
     cover_image = models.ImageField(upload_to='covers/', null=True, blank=True)
     source = models.CharField(
         max_length=500,

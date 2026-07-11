@@ -137,6 +137,7 @@ export default function UploadDrawer({ onClose }) {
   })
   const [files,    setFiles]    = useState([])
   const [coverImg, setCoverImg] = useState(null)
+  const [contributors, setContributors] = useState([''])
   const [loading,  setLoading]  = useState(false)
   const [titleError, setTitleError] = useState(false)
 
@@ -156,6 +157,14 @@ export default function UploadDrawer({ onClose }) {
     setCoverImg(f)
   }
 
+  const updateContributor = (i, value) =>
+    setContributors(prev => prev.map((c, idx) => idx === i ? value : c))
+
+  const addContributor = () => setContributors(prev => [...prev, ''])
+
+  const removeContributor = (i) =>
+    setContributors(prev => prev.filter((_, idx) => idx !== i))
+
   const handleSubmit = async () => {
     if (!form.title.trim()) { setTitleError(true); return }
     if (files.length === 0) { toast.error('Ajoutez au moins un fichier.'); return }
@@ -164,6 +173,9 @@ export default function UploadDrawer({ onClose }) {
     Object.entries(form).forEach(([k, v]) => fd.append(k, v))
     fd.append('file', files[0]) // le backend attend "file" pour le 1er
     if (coverImg) fd.append('cover_image', coverImg)
+
+    const cleanedContributors = contributors.map(c => c.trim()).filter(Boolean)
+    if (cleanedContributors.length) fd.append('contributors', cleanedContributors.join(','))
 
     setLoading(true)
     try {
@@ -283,6 +295,47 @@ export default function UploadDrawer({ onClose }) {
                 </span>
               </div>
 
+              {/* ── Contributeurs ── */}
+              <div className="upl-field">
+                <label className="upl-field-label">
+                  CONTRIBUTEURS <span className="upl-optional">(optionnel)</span>
+                </label>
+                <span className="upl-cover-hint">
+                  Les personnes qui ont contribué à faire évoluer ce dataset.
+                </span>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 6 }}>
+                  {contributors.map((c, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <input
+                        className="upl-input"
+                        placeholder="Nom du contributeur"
+                        value={c}
+                        onChange={e => updateContributor(i, e.target.value)}
+                      />
+                      {contributors.length > 1 && (
+                        <button
+                          type="button"
+                          className="upl-file-rm"
+                          onClick={() => removeContributor(i)}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  className="upl-add-file-btn"
+                  onClick={addContributor}
+                  style={{ marginTop: 8 }}
+                >
+                  <Plus size={15} /> Ajouter un contributeur
+                </button>
+              </div>
+
               {/* ── File zone + cover ── */}
               <div className="upl-section-divider">FICHIERS</div>
               <FileTab
@@ -313,6 +366,7 @@ data  = {
     "domain":      "health",
     "tags":        "tag1,tag2",
     "source":      "",
+    "contributors": "Alice,Bob",
 }
 
 r = requests.post(
@@ -335,6 +389,7 @@ print(r.json())`}</pre>
           <button className="upl-btn-reset" onClick={() => {
             setForm({ title: '', description: '', domain: 'other', tags: '', visibility: 'public', source: '' })
             setFiles([]); setCoverImg(null); setTitleError(false)
+            setContributors([''])
           }}>
             Réinitialiser
           </button>

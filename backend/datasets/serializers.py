@@ -14,7 +14,7 @@ class DatasetListSerializer(serializers.ModelSerializer):
         model = Dataset
         fields = [
             'id', 'title', 'description', 'domain', 'file_type',
-            'file_size', 'file_size_display', 'tags', 'uploaded_by',
+            'file_size', 'file_size_display', 'tags', 'contributors', 'uploaded_by',
             'download_count', 'avg_rating', 'ratings_count',
             'comments_count', 'created_at', 'cover_image_url', 'source',
             'status', 'rejection_reason'
@@ -46,7 +46,7 @@ class DatasetDetailSerializer(DatasetListSerializer):
 class DatasetCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dataset
-        fields = ['id', 'title', 'description', 'domain', 'tags', 'file', 'cover_image', 'source', 'status']
+        fields = ['id', 'title', 'description', 'domain', 'tags','contributors', 'file', 'cover_image', 'source', 'status']
         # NOTE: c'était "read_only_fieds" (typo) avant -> le champ 'status' n'était
         # jamais réellement protégé en écriture. On corrige le nom de l'attribut.
         read_only_fields = ['id', 'status']
